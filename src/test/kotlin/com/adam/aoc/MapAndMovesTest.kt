@@ -1,6 +1,6 @@
 package com.adam.aoc
 
-import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
 class MapAndMovesTest {
@@ -26,8 +26,8 @@ class MapAndMovesTest {
 
         val mapAndMoves = MapAndMoves(filename)
 
-        Assertions.assertThat(mapAndMoves.boxMap.toList()).containsExactlyElementsOf(testBoxMap().toList())
-        Assertions.assertThat(mapAndMoves.moves).isEqualTo(testMoves)
+        assertThat(mapAndMoves.boxMap.toList()).containsExactlyElementsOf(testBoxMap().toList())
+        assertThat(mapAndMoves.moves).isEqualTo(testMoves)
     }
 
     @Test
@@ -38,8 +38,8 @@ class MapAndMovesTest {
 
         val updatedPusher = boxPusher.moveBot(move)
 
-        Assertions.assertThat(updatedPusher.boxMap.toList()).containsExactlyElementsOf(testBoxMap().toList())
-        Assertions.assertThat(updatedPusher.position).isEqualTo(initialPosition)
+        assertThat(updatedPusher.boxMap.toList()).containsExactlyElementsOf(testBoxMap().toList())
+        assertThat(updatedPusher.position).isEqualTo(initialPosition)
     }
 
     @Test
@@ -54,8 +54,8 @@ class MapAndMovesTest {
         expectedMap[2][2] = '.'
         expectedMap[3][2] = '@'
         val expectedPosition = Pair(2, 3)
-        Assertions.assertThat(updatedPusher.boxMap.toList()).containsExactlyElementsOf(expectedMap.toList())
-        Assertions.assertThat(updatedPusher.position).isEqualTo(expectedPosition)
+        assertThat(updatedPusher.boxMap.toList()).containsExactlyElementsOf(expectedMap.toList())
+        assertThat(updatedPusher.position).isEqualTo(expectedPosition)
     }
 
     @Test
@@ -74,8 +74,8 @@ class MapAndMovesTest {
         expectedMap[1][4] = 'O'
         expectedMap[2][2] = '.'
         val expectedPosition = Pair(3, 1)
-        Assertions.assertThat(updatedPusher.boxMap.toList()).containsExactlyElementsOf(expectedMap.toList())
-        Assertions.assertThat(updatedPusher.position).isEqualTo(expectedPosition)
+        assertThat(updatedPusher.boxMap.toList()).containsExactlyElementsOf(expectedMap.toList())
+        assertThat(updatedPusher.position).isEqualTo(expectedPosition)
     }
 
     @Test
@@ -94,8 +94,8 @@ class MapAndMovesTest {
         expectedMap[5][4] = '@'
         expectedMap[2][2] = '.'
         val expectedPosition = Pair(4, 5)
-        Assertions.assertThat(updatedPusher.boxMap.toList()).containsExactlyElementsOf(expectedMap.toList())
-        Assertions.assertThat(updatedPusher.position).isEqualTo(expectedPosition)
+        assertThat(updatedPusher.boxMap.toList()).containsExactlyElementsOf(expectedMap.toList())
+        assertThat(updatedPusher.position).isEqualTo(expectedPosition)
     }
 
     @Test
@@ -123,8 +123,8 @@ class MapAndMovesTest {
             charArrayOf('#')
         )
         val expectedPosition = Pair(0, 2)
-        Assertions.assertThat(updatedPusher.boxMap.toList()).containsExactlyElementsOf(expectedMap.toList())
-        Assertions.assertThat(updatedPusher.position).isEqualTo(expectedPosition)
+        assertThat(updatedPusher.boxMap.toList()).containsExactlyElementsOf(expectedMap.toList())
+        assertThat(updatedPusher.position).isEqualTo(expectedPosition)
     }
 
     @Test
@@ -142,8 +142,8 @@ class MapAndMovesTest {
             charArrayOf('#', 'O', 'O', 'O', 'O', '@', '.', '#')
         )
         val expectedPosition = Pair(5, 0)
-        Assertions.assertThat(updatedPusher.boxMap.toList()).containsExactlyElementsOf(expectedMap.toList())
-        Assertions.assertThat(updatedPusher.position).isEqualTo(expectedPosition)
+        assertThat(updatedPusher.boxMap.toList()).containsExactlyElementsOf(expectedMap.toList())
+        assertThat(updatedPusher.position).isEqualTo(expectedPosition)
     }
 
     @Test
@@ -157,9 +157,166 @@ class MapAndMovesTest {
 
         val updatedPusher = boxPusher.moveBot(move)
 
-        val expectedMap = boxMap
-        val expectedPosition = initialPosition
-        Assertions.assertThat(updatedPusher.boxMap.toList()).containsExactlyElementsOf(expectedMap.toList())
-        Assertions.assertThat(updatedPusher.position).isEqualTo(expectedPosition)
+        assertThat(updatedPusher.boxMap.toList()).containsExactlyElementsOf(boxMap.toList())
+        assertThat(updatedPusher.position).isEqualTo(initialPosition)
+    }
+
+    @Test
+    fun testCalculateGpsSum() {
+        var boxPusher = BoxPusher(testBoxMap(), Pair(2, 2))
+
+        for (move in testMoves) {
+            boxPusher = boxPusher.moveBot(move)
+        }
+
+        assertThat(boxPusher.calculateGpsSum(MapChars.BOX)).isEqualTo(2028)
+    }
+
+    @Test
+    fun testPushBigBoxLeft() {
+        val boxMap = arrayOf(
+            charArrayOf('#', '.', '.', '.', '[', ']', '@', '#')
+        )
+        val move = '<'
+        val initialPosition = Pair(6, 0)
+        val boxPusher = BigBoxPusher(boxMap, initialPosition)
+
+        val updatedPusher = boxPusher.moveBot(move)
+        val expectedMap = arrayOf(
+            charArrayOf('#', '.', '.', '[', ']', '@', '.', '#')
+        )
+
+        assertThat(updatedPusher.boxMap.toList()).containsExactlyElementsOf(expectedMap.toList())
+        assertThat(updatedPusher.position).isEqualTo(Pair(5, 0))
+    }
+
+    @Test
+    fun testPushBigBoxRight() {
+        val boxMap = arrayOf(
+            charArrayOf('#', '.', '.', '@', '[', ']', '.', '#')
+        )
+        val move = '>'
+        val initialPosition = Pair(3, 0)
+        val boxPusher = BigBoxPusher(boxMap, initialPosition)
+
+        val updatedPusher = boxPusher.moveBot(move)
+        val expectedMap = arrayOf(
+            charArrayOf('#', '.', '.', '.', '@', '[', ']', '#')
+        )
+
+        assertThat(updatedPusher.boxMap.toList()).containsExactlyElementsOf(expectedMap.toList())
+        assertThat(updatedPusher.position).isEqualTo(Pair(4, 0))
+    }
+
+    @Test
+    fun testPushBigBoxesRight() {
+        val boxMap = arrayOf(
+            charArrayOf('#', '.', '.', '@', '[', ']', '[', ']', '.', '#')
+        )
+        val move = '>'
+        val initialPosition = Pair(3, 0)
+        val boxPusher = BigBoxPusher(boxMap, initialPosition)
+
+        val updatedPusher = boxPusher.moveBot(move)
+        val expectedMap = arrayOf(
+            charArrayOf('#', '.', '.', '.', '@', '[', ']', '[', ']', '#')
+        )
+        assertThat(updatedPusher.boxMap.toList()).containsExactlyElementsOf(expectedMap.toList())
+        assertThat(updatedPusher.position).isEqualTo(Pair(4, 0))
+    }
+
+    @Test
+    fun testPushBigBoxesUp() {
+        val boxMap = arrayOf(
+            charArrayOf('#', '#'),
+            charArrayOf('.', '.'),
+            charArrayOf('[', ']'),
+            charArrayOf('[', ']'),
+            charArrayOf('@', '.')
+        )
+        val move = '^'
+        val initialPosition = Pair(0, 4)
+        val boxPusher = BigBoxPusher(boxMap, initialPosition)
+
+        val updatedPusher = boxPusher.moveBot(move)
+        val expectedMap = arrayOf(
+            charArrayOf('#', '#'),
+            charArrayOf('[', ']'),
+            charArrayOf('[', ']'),
+            charArrayOf('@', '.'),
+            charArrayOf('.', '.')
+        )
+
+        assertThat(updatedPusher.boxMap.toList()).containsExactlyElementsOf(expectedMap.toList())
+        assertThat(updatedPusher.position).isEqualTo(Pair(0, 3))
+    }
+
+    @Test
+    fun testPushBigBoxesDown() {
+        val boxMap = arrayOf(
+            charArrayOf('.', '@'),
+            charArrayOf('[', ']'),
+            charArrayOf('[', ']'),
+            charArrayOf('.', '.'),
+            charArrayOf('#', '#')
+        )
+        val move = 'v'
+        val initialPosition = Pair(1, 0)
+        val boxPusher = BigBoxPusher(boxMap, initialPosition)
+
+        val updatedPusher = boxPusher.moveBot(move)
+        val expectedMap = arrayOf(
+            charArrayOf('.', '.'),
+            charArrayOf('.', '@'),
+            charArrayOf('[', ']'),
+            charArrayOf('[', ']'),
+            charArrayOf('#', '#')
+        )
+        assertThat(updatedPusher.boxMap.toList()).containsExactlyElementsOf(expectedMap.toList())
+        assertThat(updatedPusher.position).isEqualTo(Pair(1, 1))
+    }
+
+
+    @Test
+    fun testPushSimultaneousBoxesDown() {
+        val boxMap = arrayOf(
+            charArrayOf('.', '@', '.'),
+            charArrayOf('[', ']', '.'),
+            charArrayOf('.', '[', ']'),
+            charArrayOf('.', '.', '.'),
+            charArrayOf('#', '#', '#')
+        )
+        val move = 'v'
+        val initialPosition = Pair(1, 0)
+        val boxPusher = BigBoxPusher(boxMap, initialPosition)
+
+        val updatedPusher = boxPusher.moveBot(move)
+        val expectedMap = arrayOf(
+            charArrayOf('.', '.', '.'),
+            charArrayOf('.', '@', '.'),
+            charArrayOf('[', ']', '.'),
+            charArrayOf('.', '[', ']'),
+            charArrayOf('#', '#', '#')
+        )
+        assertThat(updatedPusher.boxMap.toList()).containsExactlyElementsOf(expectedMap.toList())
+        assertThat(updatedPusher.position).isEqualTo(Pair(1, 1))
+    }
+
+    @Test
+    fun testPushSimultaneousBoxesIntoWall() {
+        val boxMap = arrayOf(
+            charArrayOf('.', '@', '.'),
+            charArrayOf('[', ']', '.'),
+            charArrayOf('.', '[', ']'),
+            charArrayOf('.', '.', '#'),
+            charArrayOf('#', '#', '#')
+        )
+        val move = 'v'
+        val initialPosition = Pair(1, 0)
+        val boxPusher = BigBoxPusher(boxMap, initialPosition)
+
+        val updatedPusher = boxPusher.moveBot(move)
+        assertThat(updatedPusher.boxMap.toList()).containsExactlyElementsOf(boxMap.toList())
+        assertThat(updatedPusher.position).isEqualTo(Pair(1, 0))
     }
 }

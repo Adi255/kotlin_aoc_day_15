@@ -1,29 +1,18 @@
 package com.adam.aoc
 
-class BoxPusher(val boxMap: Array<CharArray>, val position: Pair<Int, Int>) {
+import com.adam.aoc.MapChars.Companion.DOWN
+import com.adam.aoc.MapChars.Companion.UP
+import com.adam.aoc.MapChars.Companion.LEFT
+import com.adam.aoc.MapChars.Companion.RIGHT
+import com.adam.aoc.MapChars.Companion.BOX
+import com.adam.aoc.MapChars.Companion.ROBOT
+import com.adam.aoc.MapChars.Companion.WALL
+import com.adam.aoc.MapChars.Companion.SPACE
 
-    companion object {
-        private const val UP = '^'
-        private const val DOWN = 'v'
-        private const val LEFT = '<'
-        private const val RIGHT = '>'
-        private const val WALL = '#'
-        private const val ROBOT = '@'
-        private const val SPACE = '.'
-        private const val BOX = 'O'
-    }
 
-    private fun nextSquare(move: Char): Pair<Int, Int> {
-        return when (move) {
-            UP -> Pair(position.first, position.second - 1)
-            DOWN -> Pair(position.first, position.second + 1)
-            LEFT -> Pair(position.first - 1, position.second)
-            RIGHT -> Pair(position.first + 1, position.second)
-            else -> throw IllegalArgumentException("Invalid move")
-        }
-    }
+open class BoxPusher(val boxMap: Array<CharArray>, val position: Pair<Int, Int>) {
 
-    fun moveBot(move: Char): BoxPusher {
+    open fun moveBot(move: Char): BoxPusher {
         val nextPosition = nextSquare(move)
         val newPositionOccupier = boxMap.charAt(nextPosition.first, nextPosition.second)
 
@@ -47,6 +36,16 @@ class BoxPusher(val boxMap: Array<CharArray>, val position: Pair<Int, Int>) {
         }
     }
 
+    fun nextSquare(move: Char, fromPosition: Pair<Int, Int> = this.position): Pair<Int, Int> {
+        return when (move) {
+            UP -> Pair(fromPosition.first, fromPosition.second - 1)
+            DOWN -> Pair(fromPosition.first, fromPosition.second + 1)
+            LEFT -> Pair(fromPosition.first - 1, fromPosition.second)
+            RIGHT -> Pair(fromPosition.first + 1, fromPosition.second)
+            else -> throw IllegalArgumentException("Invalid move")
+        }
+    }
+
     private fun pushBoxes(nextPosition: Pair<Int, Int>, move: Char): BoxPusher {
         fun shiftBoxes(endPosition: Pair<Int, Int>): BoxPusher {
             val nextMap = boxMap.copy()
@@ -57,59 +56,31 @@ class BoxPusher(val boxMap: Array<CharArray>, val position: Pair<Int, Int>) {
         }
 
         when (move) {
-            UP -> {
-                //search above cols for space
-                val colsToSearch = boxMap.take(nextPosition.second).map { it[nextPosition.first] }.reversed()
+            in listOf(UP, DOWN) -> {
+                val colsToSearch = colsToSearch(nextPosition, move)
+                val offset = if (move == DOWN) 1 else -1
                 for (colNum in colsToSearch.indices) {
-                    val yCoord = nextPosition.second - 1 - colNum
+                    val yCoord = nextPosition.second + offset * (1 + colNum)
                     val currentElement = boxMap.charAt(nextPosition.first, yCoord)
                     if (currentElement == SPACE) {
                         val endPos = Pair(nextPosition.first, yCoord)
                         return shiftBoxes(endPos)
-                    } else if(currentElement == WALL) {
+                    } else if (currentElement == WALL) {
                         return this
                     }
                 }
             }
 
-            DOWN -> {
-                //search above cols for space
-                val colsToSearch = boxMap.drop(nextPosition.second + 1).map { it[nextPosition.first] }
+            in listOf(LEFT, RIGHT) -> {
+                val colsToSearch = colsToSearch(nextPosition, move)
+                val offset = if (move == RIGHT) 1 else -1
                 for (colNum in colsToSearch.indices) {
-                    val yCoord = nextPosition.second + 1 + colNum
-                    val currentElement = boxMap.charAt(nextPosition.first, yCoord)
-                    if (currentElement == SPACE) {
-                        val endPos = Pair(nextPosition.first, yCoord)
-                        return shiftBoxes(endPos)
-                    } else if(currentElement == WALL) {
-                        return this
-                    }
-                }
-            }
-
-            RIGHT -> {
-                val colsToSearch = boxMap[nextPosition.second].drop(nextPosition.first + 1)
-                for (colNum in colsToSearch.indices) {
-                    val xCoord = nextPosition.first + 1 + colNum
+                    val xCoord = nextPosition.first + offset * (1 + colNum)
                     val currentElement = boxMap.charAt(xCoord, nextPosition.second)
                     if (currentElement == SPACE) {
                         val endPos = Pair(xCoord, nextPosition.second)
                         return shiftBoxes(endPos)
-                    } else if(currentElement == WALL) {
-                        return this
-                    }
-                }
-            }
-
-            LEFT -> {
-                val colsToSearch = boxMap[nextPosition.second].take(nextPosition.first).reversed()
-                for (colNum in colsToSearch.indices) {
-                    val xCoord = nextPosition.first - 1 - colNum
-                    val currentElement = boxMap.charAt(xCoord, nextPosition.second)
-                    if (currentElement == SPACE) {
-                        val endPos = Pair(xCoord, nextPosition.second)
-                        return shiftBoxes(endPos)
-                    } else if(currentElement == WALL) {
+                    } else if (currentElement == WALL) {
                         return this
                     }
                 }
@@ -118,11 +89,40 @@ class BoxPusher(val boxMap: Array<CharArray>, val position: Pair<Int, Int>) {
         return this
     }
 
-    private fun Array<CharArray>.charAt(x: Int, y: Int) = this[y][x]
+    private fun colsToSearch(nextPosition: Pair<Int, Int>, move: Char): List<Char> {
+        return when (move) {
+            UP -> boxMap.take(nextPosition.second).map { it[nextPosition.first] }.reversed()
+            DOWN -> boxMap.drop(nextPosition.second + 1).map { it[nextPosition.first] }
+            RIGHT -> boxMap[nextPosition.second].drop(nextPosition.first + 1)
+            LEFT -> boxMap[nextPosition.second].take(nextPosition.first).reversed()
+            else -> throw IllegalArgumentException("Invalid move")
+        }
+    }
 
-    private fun Array<CharArray>.setCharAt(pos: Pair<Int, Int>, c: Char) {
+    fun Array<CharArray>.charAt(x: Int, y: Int) = this[y][x]
+
+    fun Array<CharArray>.setCharAt(pos: Pair<Int, Int>, c: Char) {
         this[pos.second][pos.first] = c
     }
 
-    private fun Array<CharArray>.copy() = map { it.clone() }.toTypedArray()
+    fun Array<CharArray>.copy() = map { it.clone() }.toTypedArray()
+
+    fun calculateGpsSum(boxChar: Char): Int {
+        var gpsSum = 0
+        for (rowNum in boxMap.indices) {
+            for (colNum in boxMap[rowNum].indices) {
+                if (boxMap[rowNum][colNum] == boxChar) {
+                    gpsSum += colNum + 100 * rowNum
+                }
+            }
+        }
+        return gpsSum
+    }
+
+    fun showBoxMap() {
+        for (row in boxMap) {
+            println(row)
+        }
+        println()
+    }
 }
